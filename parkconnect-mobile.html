@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParkConnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --b5:#1A56DB;--b6:#1445B8;--b7:#0F3490;--b4:#4D82FF;--b3:#7FA8FF;
+  --b50:#EEF4FF;--b100:#D9E5FF;--b200:#B3CCFF;
+  --sky:#0EA5E9;
+  --g:#10B981;--gl:#D1FAE5;
+  --am:#F59E0B;--aml:#FEF3C7;
+  --r:#EF4444;--rl:#FEE2E2;
+  --gy50:#F8FAFC;--gy100:#F1F5F9;--gy200:#E2E8F0;
+  --gy300:#CBD5E1;--gy400:#94A3B8;--gy500:#64748B;
+  --gy600:#475569;--gy700:#334155;--gy800:#1E293B;--gy900:#0F172A;
+  --white:#fff;
+  --f:'Plus Jakarta Sans',sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shm:0 4px 16px rgba(0,0,0,.08);
+  --shl:0 12px 32px rgba(0,0,0,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--f);background:var(--gy50);color:var(--gy800);
+  font-size:15px;line-height:1.5;
+  /* simulate mobile width on desktop */
+  max-width:430px;margin:0 auto;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;min-height:100dvh;background:var(--gy50);}
+.screen.on{display:flex;}
+
+/* ── STATUS BAR (simulated) ── */
+.sbar{
+  height:44px;background:var(--white);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 20px 0;flex-shrink:0;
+  position:sticky;top:0;z-index:100;
+}
+.sbar-time{font-size:15px;font-weight:700;color:var(--gy900);}
+.sbar-icons{font-size:12px;color:var(--gy600);display:flex;gap:6px;align-items:center;}
+
+/* ── TOP BARS ── */
+.top-bar{
+  background:var(--white);padding:12px 20px 14px;
+  border-bottom:1px solid var(--gy100);
+  flex-shrink:0;position:sticky;top:44px;z-index:99;
+}
+.top-bar-row{display:flex;align-items:center;gap:12px;}
+.top-bar-title{font-size:18px;font-weight:800;color:var(--gy900);flex:1;}
+.top-bar-sub{font-size:13px;color:var(--gy500);margin-top:2px;}
+.back-btn{
+  width:40px;height:40px;border-radius:var(--r12);
+  background:var(--gy100);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;color:var(--gy700);
+  transition:background .15s;
+}
+.back-btn:active{background:var(--gy200);}
+.icon-btn{
+  width:40px;height:40px;border-radius:var(--r12);
+  background:var(--gy100);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--gy700);transition:background .15s;
+}
+.icon-btn:active{background:var(--gy200);}
+
+/* ── SCROLL BODY ── */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;
+  background:var(--white);border-top:1px solid var(--gy200);
+  display:flex;align-items:stretch;
+  padding:8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,.06);
+}
+.bnav{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:2px 0;cursor:pointer;border:none;background:transparent;
+  transition:all .18s;
+}
+.bnav-icon{font-size:22px;line-height:1;}
+.bnav-lbl{font-size:10px;font-weight:600;color:var(--gy400);}
+.bnav.on .bnav-lbl{color:var(--b5);}
+.bnav-indicator{
+  width:4px;height:4px;border-radius:50%;
+  background:transparent;margin-top:1px;
+}
+.bnav.on .bnav-indicator{background:var(--b5);}
+
+/* ── STICKY CTA ── */
+.sticky-cta{
+  position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 32px);max-width:398px;
+  z-index:150;
+}
+.cta-btn{
+  width:100%;padding:16px;border-radius:var(--r16);border:none;
+  background:var(--b5);color:white;
+  font-family:var(--f);font-size:16px;font-weight:700;
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 8px 24px rgba(26,86,219,.35);
+}
+.cta-btn:active{transform:scale(.98);box-shadow:0 4px 12px rgba(26,86,219,.3);}
+.cta-btn.green{background:var(--g);box-shadow:0 8px 24px rgba(16,185,129,.3);}
+.cta-btn.green:active{box-shadow:0 4px 12px rgba(16,185,129,.25);}
+
+/* ─────────────────────────────────
+   SCREEN 0 · HOME
+───────────────────────────────── */
+
+/* HERO HEADER */
+.home-hero{
+  background:linear-gradient(160deg,var(--b7),var(--b5) 60%,var(--sky));
+  padding:20px 20px 28px;
+}
+.home-hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.brand{display:flex;align-items:center;gap:8px;}
+.brand-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.brand-name{font-size:18px;font-weight:800;color:white;}
+.brand-name em{font-style:normal;color:rgba(255,255,255,.7);}
+.notif-btn{
+  width:40px;height:40px;border-radius:var(--r12);
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  cursor:pointer;
+}
+.home-greeting{font-size:13px;color:rgba(255,255,255,.75);margin-bottom:4px;}
+.home-title{font-size:24px;font-weight:800;color:white;line-height:1.2;margin-bottom:16px;}
+.home-title em{font-style:normal;color:#0FF5A0;}
+
+/* SEARCH BAR */
+.search-row{
+  background:white;border-radius:var(--r16);
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.search-row input{
+  flex:1;border:none;outline:none;font-family:var(--f);
+  font-size:15px;color:var(--gy800);background:transparent;
+}
+.search-row input::placeholder{color:var(--gy400);}
+.search-go{
+  width:36px;height:36px;border-radius:var(--r8);
+  background:var(--b5);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+  transition:background .15s;
+}
+.search-go:active{background:var(--b6);}
+
+/* VEHICLE SELECTOR */
+.section{padding:20px 20px 0;}
+.sec-label{
+  font-size:12px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gy400);margin-bottom:14px;
+}
+.vehicle-scroll{
+  display:flex;gap:10px;
+  overflow-x:auto;padding-bottom:4px;margin:0 -20px;padding:0 20px 4px;
+}
+.vehicle-scroll::-webkit-scrollbar{display:none;}
+.v-item{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;transition:all .18s;flex-shrink:0;
+  padding:4px;border-radius:var(--r16);min-width:72px;
+}
+.v-icon{
+  width:64px;height:64px;border-radius:18px;
+  background:var(--gy100);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;transition:all .18s;
+  border:2.5px solid transparent;
+}
+.v-name{font-size:12px;font-weight:600;color:var(--gy500);}
+.v-item.sel .v-icon{
+  background:var(--b50);border-color:var(--b4);
+  box-shadow:0 0 0 4px rgba(26,86,219,.1);
+}
+.v-item.sel .v-name{color:var(--b5);}
+
+/* FILTERS */
+.chip-scroll{
+  display:flex;gap:8px;overflow-x:auto;
+  padding:0 20px 0;margin:14px -20px 0;
+}
+.chip-scroll::-webkit-scrollbar{display:none;}
+.chip{
+  flex-shrink:0;padding:7px 14px;border-radius:100px;
+  border:1.5px solid var(--gy200);color:var(--gy600);
+  font-size:13px;font-weight:600;cursor:pointer;
+  background:white;transition:all .18s;white-space:nowrap;
+}
+.chip:active{background:var(--gy100);}
+.chip.sel{background:var(--b5);border-color:var(--b5);color:white;}
+
+/* STATS ROW */
+.stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;background:white;
+  border-radius:var(--r16);margin:16px 20px 0;
+  box-shadow:var(--sh);border:1px solid var(--gy200);overflow:hidden;
+}
+.stat-cell{
+  padding:12px 8px;text-align:center;
+  border-right:1px solid var(--gy100);
+}
+.stat-cell:last-child{border-right:none;}
+.stat-n{font-size:16px;font-weight:800;color:var(--b5);}
+.stat-l{font-size:10px;font-weight:600;color:var(--gy400);margin-top:1px;line-height:1.3;}
+
+/* LIST MAP TOGGLE */
+.lm-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 10px;
+}
+.res-count{font-size:14px;font-weight:600;color:var(--gy600);}
+.lm-toggle{
+  display:flex;background:var(--gy100);border-radius:10px;padding:3px;gap:2px;
+}
+.lm-btn{
+  padding:6px 14px;border-radius:8px;border:none;
+  font-family:var(--f);font-size:13px;font-weight:600;
+  color:var(--gy400);background:transparent;cursor:pointer;transition:all .15s;
+}
+.lm-btn.on{background:white;color:var(--b5);box-shadow:var(--sh);}
+
+/* PARK CARDS */
+.park-cards{display:flex;flex-direction:column;gap:0;padding:0 16px;}
+.park-card{
+  background:white;border-radius:var(--r16);
+  border:1.5px solid var(--gy200);
+  padding:14px;margin-bottom:10px;
+  display:flex;gap:12px;
+  cursor:pointer;transition:all .2s;
+  box-shadow:var(--sh);
+  -webkit-tap-highlight-color:transparent;
+}
+.park-card:active{
+  background:var(--b50);border-color:var(--b3);
+  transform:scale(.99);
+}
+.park-thumb{
+  width:72px;height:72px;border-radius:var(--r12);
+  background:var(--b50);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  overflow:hidden;
+}
+.park-body{flex:1;min-width:0;}
+.park-name{font-size:15px;font-weight:700;color:var(--gy900);margin-bottom:2px;line-height:1.3;}
+.park-addr{font-size:12px;color:var(--gy400);margin-bottom:8px;}
+.park-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;}
+.tag-g{background:var(--gl);color:#065F46;}
+.tag-am{background:var(--aml);color:#92400E;}
+.tag-r{background:var(--rl);color:#991B1B;}
+.tag-b{background:var(--b50);color:var(--b6);}
+.tag-gy{background:var(--gy100);color:var(--gy600);}
+.park-right{text-align:right;flex-shrink:0;}
+.park-price{font-size:16px;font-weight:800;color:var(--gy900);}
+.park-price span{font-size:11px;font-weight:400;color:var(--gy400);}
+.park-star{font-size:12px;color:var(--gy500);margin-top:3px;}
+.park-star em{font-style:normal;color:var(--am);}
+.occ-bar{width:64px;height:4px;background:var(--gy200);border-radius:2px;margin:6px 0 2px auto;overflow:hidden;}
+.occ-fill{height:100%;border-radius:2px;}
+.occ-txt{font-size:11px;color:var(--gy400);}
+
+/* MAP VIEW */
+.map-wrap{
+  margin:0 16px 10px;
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r20);height:360px;
+  position:relative;overflow:hidden;box-shadow:var(--sh);
+}
+.map-bg{
+  width:100%;height:100%;
+  background:var(--gy100);position:relative;
+}
+.map-grid{
+  position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(var(--gy200) 0 1px,transparent 1px 40px),
+    repeating-linear-gradient(90deg,var(--gy200) 0 1px,transparent 1px 50px);
+}
+.map-road-h{position:absolute;background:white;border:1px solid var(--gy200);}
+.map-road-v{position:absolute;background:white;border:1px solid var(--gy200);}
+.map-blk{position:absolute;border-radius:6px;background:var(--gy200);}
+.map-pin{position:absolute;cursor:pointer;transform:translate(-50%,-100%);transition:transform .18s;}
+.map-pin:active{transform:translate(-50%,-100%) scale(1.12);}
+.pin-bbl{
+  background:white;border:1.5px solid var(--gy300);
+  border-radius:10px;padding:5px 10px;font-size:12px;font-weight:700;
+  color:var(--gy800);white-space:nowrap;
+  box-shadow:0 3px 12px rgba(0,0,0,.12);position:relative;
+}
+.pin-bbl::after{
+  content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--gy300);
+}
+.pin-bbl.ok{border-color:var(--g);color:#065F46;background:#F0FDF4;}
+.pin-bbl.ok::after{border-top-color:var(--g);}
+.pin-bbl.warn{border-color:var(--am);color:#92400E;background:#FFFBEB;}
+.pin-bbl.warn::after{border-top-color:var(--am);}
+.pin-bbl.bad{border-color:var(--r);color:#991B1B;background:#FEF2F2;}
+.pin-bbl.bad::after{border-top-color:var(--r);}
+.my-dot{
+  position:absolute;width:16px;height:16px;border-radius:50%;
+  background:var(--b5);border:3px solid white;
+  box-shadow:0 0 0 6px rgba(26,86,219,.15);
+}
+
+/* ─────────────────────────────────
+   SCREEN 1 · PARK DETAIL
+───────────────────────────────── */
+.photo-gallery{
+  height:220px;background:var(--b50);
+  display:flex;align-items:center;justify-content:center;
+  font-size:64px;position:relative;overflow:hidden;flex-shrink:0;
+}
+.gallery-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,rgba(15,23,42,.5) 100%);
+}
+.gallery-count{
+  position:absolute;bottom:12px;right:12px;
+  background:rgba(0,0,0,.55);color:white;
+  border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;
+}
+.gallery-dots{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;
+}
+.gdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);}
+.gdot.on{background:white;width:16px;border-radius:3px;}
+
+.detail-body{padding:16px 20px;}
+.detail-name{font-size:20px;font-weight:800;color:var(--gy900);margin-bottom:4px;line-height:1.25;}
+.detail-addr{font-size:13px;color:var(--gy500);margin-bottom:12px;}
+.detail-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.pill{
+  display:flex;align-items:center;gap:5px;
+  background:var(--gy100);border-radius:100px;padding:6px 12px;
+  font-size:12px;font-weight:600;color:var(--gy700);
+}
+.pill.accent{background:var(--b50);color:var(--b6);}
+.pill.green{background:var(--gl);color:#065F46;}
+
+/* AMENITIES */
+.amenity-row{
+  display:flex;gap:10px;overflow-x:auto;
+  margin:0 -20px;padding:0 20px 4px;
+}
+.amenity-row::-webkit-scrollbar{display:none;}
+.amenity{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r12);padding:12px 14px;min-width:68px;
+  flex-shrink:0;box-shadow:var(--sh);
+}
+.am-icon{font-size:20px;}
+.am-lbl{font-size:11px;font-weight:600;color:var(--gy500);text-align:center;line-height:1.3;}
+
+/* SECTION DIVIDER */
+.sec-divider{
+  height:8px;background:var(--gy100);
+  margin:20px -20px;
+}
+
+/* SLOT PICKER */
+.slot-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.slot-legend{display:flex;gap:12px;}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--gy500);}
+.leg-dot{width:10px;height:10px;border-radius:3px;}
+
+.slot-floor-lbl{
+  font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--gy400);
+  margin-bottom:8px;
+}
+.slot-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px;}
+.slot{
+  height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;
+  border:1.5px solid transparent;
+}
+.slot.free{background:var(--gl);color:#065F46;border-color:#A7F3D0;}
+.slot.free:active{background:#BBF7D0;}
+.slot.taken{background:var(--gy100);color:var(--gy300);cursor:not-allowed;}
+.slot.sel{background:var(--b5);color:white;border-color:var(--b6);box-shadow:0 2px 8px rgba(26,86,219,.3);}
+
+/* REVIEWS */
+.review-avg{
+  display:flex;align-items:center;gap:16px;
+  background:var(--gy50);border-radius:var(--r16);padding:16px;margin-bottom:14px;
+  border:1px solid var(--gy200);
+}
+.rev-big{font-size:40px;font-weight:800;color:var(--gy900);line-height:1;}
+.rev-stars-big{font-size:16px;color:var(--am);}
+.rev-ct{font-size:12px;color:var(--gy400);margin-top:4px;}
+.rev-bars{flex:1;}
+.rbar-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.rbar-s{font-size:11px;color:var(--gy500);min-width:8px;}
+.rbar-bg{flex:1;height:5px;background:var(--gy200);border-radius:3px;overflow:hidden;}
+.rbar-f{height:100%;border-radius:3px;background:var(--am);}
+.rbar-p{font-size:10px;color:var(--gy400);min-width:28px;text-align:right;}
+
+.rev-card{
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);padding:14px;margin-bottom:10px;
+  box-shadow:var(--sh);
+}
+.rev-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.rev-av{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--b100);display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:var(--b6);flex-shrink:0;
+}
+.rev-nm{font-size:14px;font-weight:700;color:var(--gy900);}
+.rev-dt{font-size:11px;color:var(--gy400);}
+.rev-st{color:var(--am);font-size:12px;margin-left:auto;}
+.rev-txt{font-size:13px;color:var(--gy600);line-height:1.6;}
+
+/* ─────────────────────────────────
+   SCREEN 2 · BOOKING
+───────────────────────────────── */
+.booking-summary{
+  margin:16px 20px;
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);padding:14px;
+  display:flex;gap:12px;align-items:center;
+  box-shadow:var(--sh);
+}
+.bk-icon{width:48px;height:48px;border-radius:var(--r12);background:var(--b50);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.bk-name{font-size:15px;font-weight:700;color:var(--gy900);}
+.bk-sub{font-size:12px;color:var(--gy500);}
+.bk-badge{
+  margin-left:auto;background:var(--b50);border:1.5px solid var(--b200);
+  border-radius:var(--r8);padding:6px 10px;text-align:center;flex-shrink:0;
+}
+.bk-slot{font-size:16px;font-weight:800;color:var(--b5);}
+.bk-slot-l{font-size:10px;color:var(--gy500);}
+
+.form-section{padding:0 20px 16px;}
+.form-label{
+  font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--gy400);margin-bottom:10px;display:block;
+}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.t-btn{
+  background:var(--gy50);border:1.5px solid var(--gy200);
+  border-radius:var(--r12);padding:10px 4px;text-align:center;
+  font-size:13px;font-weight:600;color:var(--gy600);cursor:pointer;
+  transition:all .15s;font-family:var(--f);
+}
+.t-btn:active{background:var(--gy100);}
+.t-btn.on{background:var(--b50);border-color:var(--b5);color:var(--b5);}
+.t-btn.off{color:var(--gy300);cursor:not-allowed;background:var(--gy50);}
+
+.dur-row{display:flex;gap:8px;margin-bottom:16px;}
+.d-btn{
+  flex:1;padding:10px;border-radius:var(--r12);border:1.5px solid var(--gy200);
+  background:var(--gy50);font-size:13px;font-weight:700;color:var(--gy600);
+  cursor:pointer;text-align:center;transition:all .15s;font-family:var(--f);
+}
+.d-btn.on{background:var(--b50);border-color:var(--b5);color:var(--b5);}
+.d-btn:active{background:var(--gy100);}
+
+.price-box{
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);overflow:hidden;margin-bottom:12px;
+  box-shadow:var(--sh);
+}
+.p-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;border-bottom:1px solid var(--gy100);font-size:14px;
+}
+.p-row:last-child{border-bottom:none;}
+.p-row .pl{color:var(--gy500);}
+.p-row .pv{font-weight:700;color:var(--gy800);}
+.p-row.grand .pl{font-weight:700;color:var(--gy900);font-size:15px;}
+.p-row.grand .pv{color:var(--b5);font-size:18px;font-weight:800;}
+
+.warn-note{
+  background:var(--aml);border:1px solid #FDE68A;
+  border-radius:var(--r12);padding:10px 14px;
+  font-size:12px;color:#92400E;display:flex;gap:8px;align-items:flex-start;
+  line-height:1.5;margin-bottom:16px;
+}
+
+/* ─────────────────────────────────
+   SCREEN 3 · PAYMENT
+───────────────────────────────── */
+.pay-summary{
+  margin:16px 20px;background:var(--b50);
+  border:1.5px solid var(--b200);border-radius:var(--r16);padding:14px;
+}
+.pay-sum-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--b5);margin-bottom:10px;}
+.pay-sum-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--b100);}
+.pay-sum-row:last-child{border-bottom:none;padding-top:8px;margin-top:4px;}
+.pay-sum-row .pl{color:var(--b7);}
+.pay-sum-row .pv{font-weight:700;color:var(--b7);}
+.pay-sum-row.grand .pl{font-weight:800;font-size:15px;}
+.pay-sum-row.grand .pv{font-size:18px;font-weight:800;color:var(--b5);}
+
+.pay-methods-lbl{
+  font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--gy400);padding:0 20px 10px;display:block;
+}
+.pay-items{display:flex;flex-direction:column;gap:8px;padding:0 20px;}
+.pay-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px;border-radius:var(--r16);border:1.5px solid var(--gy200);
+  background:white;cursor:pointer;transition:all .18s;box-shadow:var(--sh);
+}
+.pay-item:active{background:var(--gy50);}
+.pay-item.on{border-color:var(--b5);background:var(--b50);box-shadow:0 0 0 3px rgba(26,86,219,.08);}
+.pm-logo{
+  width:44px;height:30px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+}
+.pm-mm{background:#AE2070;color:white;}
+.pm-zl{background:#0068FF;color:white;}
+.pm-vn{background:#007EC9;color:white;}
+.pm-cd{background:var(--gy800);color:white;}
+.pm-cs{background:var(--gl);color:#065F46;}
+.pm-info{flex:1;}
+.pm-name{font-size:15px;font-weight:700;color:var(--gy900);}
+.pm-sub{font-size:12px;color:var(--gy500);}
+.pm-bal{font-size:13px;font-weight:700;color:var(--g);}
+.radio{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid var(--gy300);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;
+}
+.radio.on{border-color:var(--b5);}
+.radio-dot{width:11px;height:11px;border-radius:50%;background:var(--b5);}
+
+.sec-note{
+  margin:12px 20px;background:var(--gl);
+  border-radius:var(--r12);padding:10px 14px;
+  font-size:12px;color:#065F46;display:flex;gap:8px;align-items:center;
+}
+
+/* ─────────────────────────────────
+   SCREEN 4 · SUCCESS
+───────────────────────────────── */
+.success-section{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:32px 20px;background:white;
+}
+.success-ring{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--gl);border:3px solid #A7F3D0;
+  display:flex;align-items:center;justify-content:center;font-size:36px;
+  margin-bottom:16px;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-size:24px;font-weight:800;color:var(--gy900);margin-bottom:6px;}
+.success-sub{font-size:14px;color:var(--gy500);margin-bottom:24px;text-align:center;}
+
+.qr-card{
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r20);padding:20px;margin-bottom:16px;
+  display:flex;flex-direction:column;align-items:center;
+  box-shadow:var(--shm);width:100%;
+}
+.qr-code{
+  width:140px;height:140px;
+  background:repeating-conic-gradient(var(--gy900) 0% 25%,white 0% 50%) 0/11px 11px;
+  border-radius:6px;margin-bottom:12px;opacity:.9;
+}
+.qr-id{font-family:monospace;font-size:15px;font-weight:700;color:var(--b5);}
+.qr-label{font-size:12px;color:var(--gy500);margin-top:4px;}
+
+.booking-card{
+  background:var(--gy50);border:1px solid var(--gy200);
+  border-radius:var(--r16);padding:16px;width:100%;margin-bottom:16px;
+}
+.bc-row{
+  display:flex;justify-content:space-between;padding:8px 0;
+  border-bottom:1px solid var(--gy100);font-size:14px;
+}
+.bc-row:last-child{border-bottom:none;}
+.bc-row .bl{color:var(--gy500);}
+.bc-row .bv{font-weight:700;color:var(--gy800);}
+
+.action-row{display:flex;gap:10px;width:100%;}
+.act-btn{
+  flex:1;padding:14px;border-radius:var(--r16);border:none;
+  font-family:var(--f);font-size:14px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .18s;
+}
+.act-btn.primary{background:var(--b5);color:white;box-shadow:0 6px 20px rgba(26,86,219,.3);}
+.act-btn.primary:active{transform:scale(.98);}
+.act-btn.ghost{background:var(--gy100);color:var(--gy700);}
+.act-btn.ghost:active{background:var(--gy200);}
+
+/* ─────────────────────────────────
+   SCREEN 5 · HISTORY + REVIEW
+───────────────────────────────── */
+.hist-item{
+  background:white;border-bottom:1px solid var(--gy100);
+  padding:16px 20px;cursor:pointer;transition:background .15s;
+}
+.hist-item:active{background:var(--gy50);}
+.hi-top{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.hi-ico{width:44px;height:44px;border-radius:var(--r12);background:var(--b50);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.hi-name{font-size:15px;font-weight:700;color:var(--gy900);flex:1;}
+.hi-price{font-size:16px;font-weight:800;color:var(--b5);}
+.hi-sub{font-size:12px;color:var(--gy500);padding-left:56px;margin-bottom:8px;}
+.hi-stars-row{padding-left:56px;display:flex;align-items:center;gap:8px;}
+.stars{display:flex;gap:3px;}
+.star{font-size:22px;cursor:pointer;color:var(--gy200);transition:all .12s;}
+.star.on{color:var(--am);}
+.star:active{transform:scale(1.2);}
+.write-rev-btn{
+  margin-left:auto;background:transparent;
+  border:1.5px solid var(--gy200);border-radius:100px;
+  padding:5px 12px;font-size:12px;font-weight:600;color:var(--gy500);
+  cursor:pointer;transition:all .15s;font-family:var(--f);
+}
+.write-rev-btn:active{border-color:var(--b4);color:var(--b5);}
+
+/* REVIEW SHEET */
+.sheet-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(15,23,42,.5);backdrop-filter:blur(3px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.sheet-overlay.open{display:flex;}
+.review-sheet{
+  background:white;border-radius:24px 24px 0 0;
+  width:100%;max-width:430px;
+  padding:0 20px max(24px, env(safe-area-inset-bottom));
+  box-shadow:0 -12px 40px rgba(0,0,0,.15);
+  animation:slideUp .32s cubic-bezier(.32,1,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--gy200);border-radius:2px;margin:14px auto 20px;}
+.sheet-title{font-size:20px;font-weight:800;color:var(--gy900);margin-bottom:4px;}
+.sheet-sub{font-size:13px;color:var(--gy500);margin-bottom:20px;}
+.big-stars{display:flex;justify-content:center;gap:8px;margin-bottom:20px;}
+.big-star{font-size:40px;cursor:pointer;color:var(--gy200);transition:all .15s;}
+.big-star.on{color:var(--am);}
+.big-star:active{transform:scale(1.15);}
+.review-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.rtag{
+  padding:8px 14px;border-radius:100px;
+  border:1.5px solid var(--gy200);font-size:13px;font-weight:600;
+  color:var(--gy600);cursor:pointer;background:white;transition:all .15s;
+}
+.rtag.sel{background:var(--b5);border-color:var(--b5);color:white;}
+.rtag:active{background:var(--gy100);}
+.rev-textarea{
+  width:100%;background:var(--gy50);border:1.5px solid var(--gy200);
+  border-radius:var(--r16);padding:12px 14px;
+  font-family:var(--f);font-size:14px;resize:none;height:80px;outline:none;
+  color:var(--gy800);margin-bottom:14px;transition:border-color .15s;
+}
+.rev-textarea::placeholder{color:var(--gy400);}
+.rev-textarea:focus{border-color:var(--b4);}
+.sheet-submit{
+  width:100%;padding:16px;border-radius:var(--r16);border:none;
+  background:var(--b5);color:white;font-family:var(--f);
+  font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 6px 20px rgba(26,86,219,.3);margin-bottom:10px;
+  transition:all .18s;
+}
+.sheet-submit:active{transform:scale(.98);}
+.sheet-skip{
+  width:100%;padding:14px;border-radius:var(--r16);border:none;
+  background:var(--gy100);color:var(--gy600);font-family:var(--f);
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;
+}
+.sheet-skip:active{background:var(--gy200);}
+
+/* ─────────────────────────────────
+   SCREEN 6 · OPERATOR DASHBOARD
+───────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 20px;}
+.kpi-card{
+  background:white;border-radius:var(--r16);
+  border:1.5px solid var(--gy200);padding:14px;
+  box-shadow:var(--sh);
+}
+.kpi-lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gy400);margin-bottom:8px;}
+.kpi-val{font-size:28px;font-weight:800;line-height:1;margin-bottom:5px;}
+.kpi-chg{font-size:12px;display:flex;align-items:center;gap:4px;}
+.kpi-up{color:var(--g);}
+.kpi-dn{color:var(--r);}
+
+/* SLOT CARDS */
+.slot-cards{display:flex;flex-direction:column;gap:10px;padding:0 20px 4px;}
+.slot-card{
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);padding:16px;
+  box-shadow:var(--sh);
+}
+.slot-type-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;}
+.slot-dot{width:10px;height:10px;border-radius:50%;}
+.slot-type-name{font-size:13px;font-weight:700;color:var(--gy600);letter-spacing:.06em;text-transform:uppercase;}
+.slot-counter{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.cnt-btn{
+  width:44px;height:44px;border-radius:var(--r12);border:none;
+  font-size:20px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f);transition:all .15s;
+}
+.cnt-minus{background:var(--rl);color:var(--r);}
+.cnt-minus:active{background:#FECACA;}
+.cnt-plus{background:var(--gl);color:var(--g);}
+.cnt-plus:active{background:#BBF7D0;}
+.cnt-num{font-size:32px;font-weight:800;color:var(--gy900);min-width:48px;text-align:center;}
+.slot-cap-txt{font-size:12px;color:var(--gy400);}
+.occ-track{background:var(--gy100);border-radius:4px;height:6px;overflow:hidden;margin-top:8px;}
+.occ-fill2{height:100%;border-radius:4px;transition:width .4s;}
+
+/* CHART PANEL */
+.chart-panel{
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);margin:0 20px;
+  padding:16px;box-shadow:var(--sh);
+}
+.chart-lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);margin-bottom:14px;}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:18px;position:relative;}
+.bar-chart::after{content:'';position:absolute;bottom:18px;left:0;right:0;border-bottom:1px dashed var(--gy200);}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--b200);cursor:pointer;min-height:2px;transition:background .15s;}
+.bar:active{background:var(--b4);}
+.bar.peak{background:var(--b5);}
+.bar-l{font-size:9px;color:var(--gy400);}
+
+/* DONUT ROW */
+.donut-row{display:flex;align-items:center;justify-content:center;gap:20px;height:100px;}
+.donut-leg{display:flex;flex-direction:column;gap:8px;}
+.dl-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--gy600);}
+.dl-dot{width:10px;height:10px;border-radius:50%;}
+.dl-val{margin-left:auto;font-weight:700;color:var(--gy800);}
+
+/* REPORT PANELS */
+.rep-panel{
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);padding:16px;margin:10px 20px 0;
+  box-shadow:var(--sh);
+}
+.rep-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.rep-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);}
+.peak-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;}
+.peak-row:last-child{margin-bottom:0;}
+.peak-time{font-weight:700;color:var(--gy800);min-width:100px;}
+.peak-bg{flex:1;height:6px;background:var(--gy100);border-radius:3px;overflow:hidden;}
+.peak-bar{height:100%;border-radius:3px;}
+.peak-pct{font-size:12px;color:var(--gy400);min-width:32px;text-align:right;}
+
+.metric-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gy100);font-size:14px;}
+.metric-row:last-child{border-bottom:none;}
+.metric-row .ml{color:var(--gy500);}
+.metric-row .mv{font-weight:700;color:var(--gy900);}
+
+/* INSIGHT CARD */
+.insight-card{
+  margin:10px 20px;background:var(--b50);
+  border:1.5px solid var(--b200);border-radius:var(--r16);padding:14px;
+  display:flex;gap:10px;
+}
+.insight-card p{font-size:13px;color:var(--b7);line-height:1.6;}
+
+/* UPLOAD ZONE */
+.upload-zone{
+  margin:10px 20px;
+  background:var(--gy50);border:2px dashed var(--gy300);
+  border-radius:var(--r16);padding:24px;text-align:center;cursor:pointer;
+  transition:all .18s;
+}
+.upload-zone:active{background:var(--b50);border-color:var(--b4);}
+.upload-zone p{font-size:13px;color:var(--gy500);margin-top:6px;}
+
+/* PROMO CARDS */
+.promo-scroll{
+  display:flex;gap:10px;overflow-x:auto;
+  padding:10px 20px 4px;
+}
+.promo-scroll::-webkit-scrollbar{display:none;}
+.promo-card{
+  flex-shrink:0;width:200px;
+  background:white;border:1.5px solid var(--gy200);
+  border-radius:var(--r16);padding:16px;box-shadow:var(--sh);
+}
+.promo-card.rec{border-color:var(--b5);background:var(--b50);}
+.promo-badge{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;
+  background:var(--b5);color:white;padding:3px 9px;border-radius:100px;
+  margin-bottom:6px;text-transform:uppercase;
+}
+.promo-name{font-size:16px;font-weight:800;color:var(--gy900);margin-bottom:4px;}
+.promo-price{font-size:20px;font-weight:800;color:var(--b5);margin-bottom:10px;}
+.promo-price span{font-size:12px;font-weight:400;color:var(--gy400);}
+.promo-feats{list-style:none;font-size:12px;color:var(--gy500);display:flex;flex-direction:column;gap:4px;}
+.promo-btn{
+  width:100%;margin-top:14px;padding:11px;border-radius:var(--r12);
+  border:none;font-family:var(--f);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.promo-btn.primary{background:var(--b5);color:white;}
+.promo-btn.ghost{background:var(--gy100);color:var(--gy700);}
+.promo-btn.outline{background:transparent;border:1.5px solid var(--b200);color:var(--b5);}
+.promo-btn:active{opacity:.85;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--gy900);color:white;
+  border-radius:var(--r12);padding:12px 18px;
+  font-size:14px;font-weight:500;white-space:nowrap;
+  opacity:0;transition:all .32s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;z-index:999;box-shadow:var(--shl);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* SECTION BLOCK */
+.section-block{padding:16px 20px 0;}
+
+/* ── DESKTOP HINT ── */
+@media(min-width:500px){
+  body{box-shadow:0 0 0 1px var(--gy200),0 20px 60px rgba(0,0,0,.15);}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+  SCREEN 0 · HOME
+══════════════════════════════ -->
+<div class="screen on" id="s0">
+  <!-- Status bar -->
+  <div class="sbar" style="background:var(--b7);">
+    <span class="sbar-time" style="color:white;">9:41</span>
+    <span class="sbar-icons" style="color:rgba(255,255,255,.8);">📶 🔋</span>
+  </div>
+
+  <div class="scroll">
+    <!-- HERO -->
+    <div class="home-hero">
+      <div class="home-hero-top">
+        <div class="brand">
+          <div class="brand-icon">🅿</div>
+          <div class="brand-name">Park<em>Connect</em></div>
+        </div>
+        <div class="notif-btn">🔔</div>
+      </div>
+      <div class="home-greeting">Xin chào, Minh Anh 👋</div>
+      <div class="home-title">Tìm bãi xe<br>gần bạn <em>ngay</em></div>
+      <div class="search-row">
+        <span style="font-size:18px;">📍</span>
+        <input type="text" placeholder="Tìm khu vực, tòa nhà...">
+        <button class="search-go" onclick="toast('🔍 Đang tìm kiếm...')">→</button>
+      </div>
+    </div>
+
+    <!-- VEHICLE SELECTOR -->
+    <div class="section" style="padding-top:24px;">
+      <div class="sec-label">Loại phương tiện</div>
+      <div class="vehicle-scroll">
+        <div class="v-item sel" onclick="pickVehicle(this,'Xe máy')">
+          <div class="v-icon">🛵</div>
+          <div class="v-name">Xe máy</div>
+        </div>
+        <div class="v-item" onclick="pickVehicle(this,'Ô tô')">
+          <div class="v-icon">🚗</div>
+          <div class="v-name">Ô tô</div>
+        </div>
+        <div class="v-item" onclick="pickVehicle(this,'SUV 7 chỗ')">
+          <div class="v-icon">🚙</div>
+          <div class="v-name">SUV 7 chỗ</div>
+        </div>
+        <div class="v-item" onclick="pickVehicle(this,'Bán tải')">
+          <div class="v-icon">🛻</div>
+          <div class="v-name">Bán tải</div>
+        </div>
+        <div class="v-item" onclick="pickVehicle(this,'Xe tải')">
+          <div class="v-icon">🚚</div>
+          <div class="v-name">Xe tải</div>
+        </div>
+        <div class="v-item" onclick="pickVehicle(this,'Xe khách')">
+          <div class="v-icon">🚌</div>
+          <div class="v-name">Xe khách</div>
+        </div>
+        <div class="v-item" onclick="pickVehicle(this,'Xe điện')">
+          <div class="v-icon">⚡</div>
+          <div class="v-name">Xe điện</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="section" style="padding-top:16px;">
+      <div class="sec-label">Khu vực & Tiện ích</div>
+      <div class="chip-scroll">
+        <div class="chip sel" onclick="toggleChip(this)">Tất cả</div>
+        <div class="chip" onclick="toggleChip(this)">Quận 1</div>
+        <div class="chip" onclick="toggleChip(this)">Quận 3</div>
+        <div class="chip" onclick="toggleChip(this)">Quận 5</div>
+        <div class="chip" onclick="toggleChip(this)">Bình Thạnh</div>
+        <div class="chip" onclick="toggleChip(this)">Thủ Đức</div>
+        <div class="chip" onclick="toggleChip(this)">🏠 Mái che</div>
+        <div class="chip" onclick="toggleChip(this)">📷 Camera</div>
+        <div class="chip" onclick="toggleChip(this)">⚡ Sạc EV</div>
+        <div class="chip" onclick="toggleChip(this)">✅ Còn chỗ</div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-n">2.4K+</div>
+        <div class="stat-l">Bãi xe đối tác</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-n">120K</div>
+        <div class="stat-l">Lượt đặt/tháng</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-n">98%</div>
+        <div class="stat-l">Hài lòng</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-n">15TP</div>
+        <div class="stat-l">Thành phố</div>
+      </div>
+    </div>
+
+    <!-- LIST/MAP TOGGLE -->
+    <div class="lm-row">
+      <span class="res-count">12 bãi xe phù hợp</span>
+      <div class="lm-toggle">
+        <button class="lm-btn on" id="btnList" onclick="switchListMap('list')">≡ Danh sách</button>
+        <button class="lm-btn" id="btnMap" onclick="switchListMap('map')">⊞ Bản đồ</button>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="listView" class="park-cards">
+      <div class="park-card" onclick="goTo(1)">
+        <div class="park-thumb">🏢</div>
+        <div class="park-body">
+          <div class="park-name">Vincom Đồng Khởi</div>
+          <div class="park-addr">📍 70 Lê Thánh Tôn, Q.1 · 0.3 km</div>
+          <div class="park-tags">
+            <span class="tag tag-g">● 68 chỗ trống</span>
+            <span class="tag tag-b">🏠 Mái che</span>
+            <span class="tag tag-b">24/7</span>
+          </div>
+        </div>
+        <div class="park-right">
+          <div class="park-price">5.000₫ <span>/giờ</span></div>
+          <div class="park-star"><em>★</em> 4.8 · 312</div>
+          <div class="occ-bar"><div class="occ-fill" style="width:70%;background:var(--am);"></div></div>
+          <div class="occ-txt">70% đầy</div>
+        </div>
+      </div>
+
+      <div class="park-card" onclick="goTo(1)">
+        <div class="park-thumb">🌿</div>
+        <div class="park-body">
+          <div class="park-name">Green Park – Landmark 81</div>
+          <div class="park-addr">📍 Vinhomes, Bình Thạnh · 2.1 km</div>
+          <div class="park-tags">
+            <span class="tag tag-g">● 341 chỗ trống</span>
+            <span class="tag tag-b">⚡ Sạc EV</span>
+          </div>
+        </div>
+        <div class="park-right">
+          <div class="park-price">8.000₫ <span>/giờ</span></div>
+          <div class="park-star"><em>★</em> 4.9 · 856</div>
+          <div class="occ-bar"><div class="occ-fill" style="width:43%;background:var(--g);"></div></div>
+          <div class="occ-txt">43% đầy</div>
+        </div>
+      </div>
+
+      <div class="park-card" onclick="goTo(1)">
+        <div class="park-thumb">🏬</div>
+        <div class="park-body">
+          <div class="park-name">Parkson Hùng Vương</div>
+          <div class="park-addr">📍 Hùng Vương Plaza, Q.5 · 1.2 km</div>
+          <div class="park-tags">
+            <span class="tag tag-g">● 102 chỗ trống</span>
+            <span class="tag tag-gy">7–22h</span>
+          </div>
+        </div>
+        <div class="park-right">
+          <div class="park-price">4.000₫ <span>/giờ</span></div>
+          <div class="park-star"><em>★</em> 4.5 · 201</div>
+          <div class="occ-bar"><div class="occ-fill" style="width:32%;background:var(--g);"></div></div>
+          <div class="occ-txt">32% đầy</div>
+        </div>
+      </div>
+
+      <div class="park-card" onclick="goTo(1)">
+        <div class="park-thumb">🗿</div>
+        <div class="park-body">
+          <div class="park-name">Bãi xe Bến Thành</div>
+          <div class="park-addr">📍 Chợ Bến Thành, Q.1 · 0.7 km</div>
+          <div class="park-tags">
+            <span class="tag tag-am">⚠ Còn 4 chỗ</span>
+            <span class="tag tag-gy">Ngoài trời</span>
+          </div>
+        </div>
+        <div class="park-right">
+          <div class="park-price">3.000₫ <span>/giờ</span></div>
+          <div class="park-star"><em>★</em> 3.9 · 88</div>
+          <div class="occ-bar"><div class="occ-fill" style="width:95%;background:var(--r);"></div></div>
+          <div class="occ-txt">95% đầy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP VIEW -->
+    <div id="mapView" style="display:none;padding:0 16px;">
+      <div class="map-wrap">
+        <div class="map-bg">
+          <div class="map-grid"></div>
+          <div class="map-road-h" style="top:38%;left:0;right:0;height:14px;"></div>
+          <div class="map-road-h" style="top:66%;left:0;right:0;height:10px;"></div>
+          <div class="map-road-v" style="left:28%;top:0;bottom:0;width:12px;"></div>
+          <div class="map-road-v" style="left:63%;top:0;bottom:0;width:12px;"></div>
+          <div class="map-blk" style="left:3%;top:5%;width:22%;height:30%;opacity:.6;"></div>
+          <div class="map-blk" style="left:32%;top:5%;width:28%;height:28%;"></div>
+          <div class="map-blk" style="left:67%;top:5%;width:28%;height:30%;opacity:.7;"></div>
+          <div class="map-blk" style="left:3%;top:48%;width:22%;height:30%;opacity:.5;"></div>
+          <div class="map-blk" style="left:32%;top:50%;width:28%;height:28%;opacity:.5;"></div>
+          <div class="map-blk" style="left:67%;top:50%;width:28%;height:28%;"></div>
+          <div class="my-dot" style="position:absolute;left:48%;top:46%;transform:translate(-50%,-50%);"></div>
+          <div class="map-pin" style="left:24%;top:36%;" onclick="goTo(1)"><div class="pin-bbl ok">5K · 68 chỗ</div></div>
+          <div class="map-pin" style="left:52%;top:55%;" onclick="goTo(1)"><div class="pin-bbl">4K · 102 chỗ</div></div>
+          <div class="map-pin" style="left:37%;top:63%;" onclick="goTo(1)"><div class="pin-bbl warn">3K · 4 chỗ</div></div>
+          <div class="map-pin" style="left:76%;top:27%;" onclick="goTo(1)"><div class="pin-bbl ok">8K · 341 chỗ</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav on" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(5)"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(6)"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SCREEN 1 · DETAIL
+══════════════════════════════ -->
+<div class="screen" id="s1">
+  <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">📶 🔋</span></div>
+  <div class="top-bar">
+    <div class="top-bar-row">
+      <button class="back-btn" onclick="goTo(0)">←</button>
+      <div><div class="top-bar-title">Chi tiết bãi xe</div></div>
+      <button class="icon-btn">♥</button>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <!-- GALLERY -->
+    <div class="photo-gallery">
+      🏢
+      <div class="gallery-overlay"></div>
+      <div class="gallery-count">1 / 5 ảnh</div>
+      <div class="gallery-dots">
+        <div class="gdot on"></div><div class="gdot"></div><div class="gdot"></div><div class="gdot"></div><div class="gdot"></div>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="detail-body">
+      <div class="detail-name">Bãi xe Vincom Đồng Khởi</div>
+      <div class="detail-addr">📍 Tầng B1, Vincom Center, 70 Lê Thánh Tôn, Quận 1</div>
+      <div class="detail-pills">
+        <div class="pill green"><span>●</span> 68 chỗ trống</div>
+        <div class="pill"><span>⭐</span> 4.8 (312 đánh giá)</div>
+        <div class="pill"><span>🕐</span> 24/7</div>
+        <div class="pill accent"><span>💰</span> 5.000₫/giờ</div>
+      </div>
+    </div>
+
+    <!-- AMENITIES -->
+    <div class="section-block">
+      <div class="sec-label">Tiện ích</div>
+      <div class="amenity-row">
+        <div class="amenity"><div class="am-icon">🏠</div><div class="am-lbl">Mái che</div></div>
+        <div class="amenity"><div class="am-icon">📷</div><div class="am-lbl">Camera 24/7</div></div>
+        <div class="amenity"><div class="am-icon">💂</div><div class="am-lbl">Bảo vệ</div></div>
+        <div class="amenity"><div class="am-icon">⚡</div><div class="am-lbl">Sạc EV</div></div>
+        <div class="amenity"><div class="am-icon">♿</div><div class="am-lbl">Khuyết tật</div></div>
+        <div class="amenity"><div class="am-icon">🚿</div><div class="am-lbl">Vệ sinh</div></div>
+      </div>
+    </div>
+
+    <div class="sec-divider"></div>
+
+    <!-- SLOT MAP -->
+    <div class="section-block">
+      <div class="slot-header">
+        <div class="sec-label" style="margin:0;">Sơ đồ chỗ đỗ – Tầng B1</div>
+        <div class="slot-legend">
+          <div class="leg"><div class="leg-dot" style="background:var(--gl);border:1.5px solid #A7F3D0;"></div>Trống</div>
+          <div class="leg"><div class="leg-dot" style="background:var(--gy100);"></div>Có xe</div>
+          <div class="leg"><div class="leg-dot" style="background:var(--b5);"></div>Chọn</div>
+        </div>
+      </div>
+      <div class="slot-floor-lbl">Hàng A</div>
+      <div class="slot-grid">
+        <div class="slot taken">A1</div><div class="slot taken">A2</div>
+        <div class="slot free" onclick="pickSlot(this)">A3</div>
+        <div class="slot free" onclick="pickSlot(this)">A4</div>
+        <div class="slot taken">A5</div>
+        <div class="slot free" onclick="pickSlot(this)">A6</div>
+      </div>
+      <div class="slot-floor-lbl">Hàng B</div>
+      <div class="slot-grid">
+        <div class="slot free" onclick="pickSlot(this)">B1</div>
+        <div class="slot taken">B2</div><div class="slot taken">B3</div>
+        <div class="slot free" onclick="pickSlot(this)">B4</div>
+        <div class="slot free" onclick="pickSlot(this)">B5</div>
+        <div class="slot taken">B6</div>
+      </div>
+      <div class="slot-floor-lbl">Hàng C</div>
+      <div class="slot-grid">
+        <div class="slot taken">C1</div>
+        <div class="slot free" onclick="pickSlot(this)">C2</div>
+        <div class="slot free" onclick="pickSlot(this)">C3</div>
+        <div class="slot taken">C4</div><div class="slot taken">C5</div>
+        <div class="slot free" onclick="pickSlot(this)">C6</div>
+      </div>
+    </div>
+
+    <div class="sec-divider"></div>
+
+    <!-- REVIEWS -->
+    <div class="section-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="sec-label" style="margin:0;">Đánh giá cộng đồng</div>
+        <span style="font-size:13px;font-weight:600;color:var(--b5);cursor:pointer;">Xem tất cả →</span>
+      </div>
+      <div class="review-avg">
+        <div style="text-align:center;">
+          <div class="rev-big">4.8</div>
+          <div class="rev-stars-big">★★★★★</div>
+          <div class="rev-ct">312 đánh giá</div>
+        </div>
+        <div class="rev-bars">
+          <div class="rbar-row"><span class="rbar-s">5</span><div class="rbar-bg"><div class="rbar-f" style="width:78%;"></div></div><span class="rbar-p">78%</span></div>
+          <div class="rbar-row"><span class="rbar-s">4</span><div class="rbar-bg"><div class="rbar-f" style="width:14%;"></div></div><span class="rbar-p">14%</span></div>
+          <div class="rbar-row"><span class="rbar-s">3</span><div class="rbar-bg"><div class="rbar-f" style="width:5%;"></div></div><span class="rbar-p">5%</span></div>
+          <div class="rbar-row"><span class="rbar-s">2</span><div class="rbar-bg"><div class="rbar-f" style="width:2%;"></div></div><span class="rbar-p">2%</span></div>
+          <div class="rbar-row"><span class="rbar-s">1</span><div class="rbar-bg"><div class="rbar-f" style="width:1%;"></div></div><span class="rbar-p">1%</span></div>
+        </div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-head">
+          <div class="rev-av">T</div>
+          <div><div class="rev-nm">Trần Thị Hoa</div><div class="rev-dt">2 ngày trước</div></div>
+          <div class="rev-st">★★★★★</div>
+        </div>
+        <div class="rev-txt">Bãi xe sạch, nhân viên tốt. Đặt qua app rất tiện, vào thẳng không cần xếp hàng. Camera dày đặc nên yên tâm.</div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-head">
+          <div class="rev-av" style="background:var(--gl);color:#065F46;">N</div>
+          <div><div class="rev-nm">Nguyễn Minh Tuấn</div><div class="rev-dt">5 ngày trước</div></div>
+          <div class="rev-st">★★★★☆</div>
+        </div>
+        <div class="rev-txt">Giá hợp lý. Hệ thống QR quét nhanh, không bị kẹt giờ cao điểm.</div>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+  </div>
+
+  <div class="sticky-cta">
+    <button class="cta-btn" id="detailCta" onclick="goTo(2)">Đặt chỗ ngay – Chọn chỗ đỗ</button>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav on" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(5)"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(6)"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SCREEN 2 · BOOKING
+══════════════════════════════ -->
+<div class="screen" id="s2">
+  <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">📶 🔋</span></div>
+  <div class="top-bar">
+    <div class="top-bar-row">
+      <button class="back-btn" onclick="goTo(1)">←</button>
+      <div><div class="top-bar-title">Đặt chỗ</div><div class="top-bar-sub">Chọn thời gian</div></div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <div class="booking-summary">
+      <div class="bk-icon">🏢</div>
+      <div><div class="bk-name">Vincom Đồng Khởi</div><div class="bk-sub">Tầng B1 · 5.000₫/giờ</div></div>
+      <div class="bk-badge"><div class="bk-slot" id="bkSlot">A3</div><div class="bk-slot-l">Chỗ chọn</div></div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Giờ vào</label>
+      <div class="time-grid">
+        <div class="t-btn off">7:00</div><div class="t-btn off">8:00</div>
+        <div class="t-btn" onclick="pickTime(this)">9:00</div>
+        <div class="t-btn" onclick="pickTime(this)">10:00</div>
+        <div class="t-btn on" onclick="pickTime(this)">11:00</div>
+        <div class="t-btn" onclick="pickTime(this)">12:00</div>
+        <div class="t-btn" onclick="pickTime(this)">13:00</div>
+        <div class="t-btn" onclick="pickTime(this)">14:00</div>
+        <div class="t-btn" onclick="pickTime(this)">15:00</div>
+        <div class="t-btn" onclick="pickTime(this)">16:00</div>
+        <div class="t-btn off">17:00</div><div class="t-btn off">18:00</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Thời lượng</label>
+      <div class="dur-row">
+        <div class="d-btn" onclick="pickDur(this,'1h',5000)">1 giờ</div>
+        <div class="d-btn on" onclick="pickDur(this,'2h',10000)">2 giờ</div>
+        <div class="d-btn" onclick="pickDur(this,'3h',15000)">3 giờ</div>
+        <div class="d-btn" onclick="pickDur(this,'4h+',20000)">4h+</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="price-box">
+        <div class="p-row"><span class="pl">Phí đỗ xe (2 giờ)</span><span class="pv" id="bkPrice">10.000₫</span></div>
+        <div class="p-row"><span class="pl">Phí dịch vụ</span><span class="pv">2.000₫</span></div>
+        <div class="p-row"><span class="pl">Ưu đãi lần đầu</span><span class="pv" style="color:var(--g);">–2.000₫</span></div>
+        <div class="p-row grand"><span class="pl">Tổng cộng</span><span class="pv" id="bkTotal">10.000₫</span></div>
+      </div>
+      <div class="warn-note">⚠️ Chỗ được giữ tối đa <strong>30 phút</strong> sau giờ đặt. Quá thời gian tự động huỷ.</div>
+    </div>
+  </div>
+
+  <div class="sticky-cta">
+    <button class="cta-btn" onclick="goTo(3)">Tiếp tục thanh toán →</button>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav on"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(6)"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SCREEN 3 · PAYMENT
+══════════════════════════════ -->
+<div class="screen" id="s3">
+  <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">📶 🔋</span></div>
+  <div class="top-bar">
+    <div class="top-bar-row">
+      <button class="back-btn" onclick="goTo(2)">←</button>
+      <div><div class="top-bar-title">Thanh toán</div><div class="top-bar-sub">Chọn phương thức</div></div>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <div class="pay-summary">
+      <div class="pay-sum-title">Tóm tắt đặt chỗ</div>
+      <div class="pay-sum-row"><span class="pl">Bãi xe</span><span class="pv">Vincom Đồng Khởi</span></div>
+      <div class="pay-sum-row"><span class="pl">Chỗ đỗ</span><span class="pv" id="ps-slot">A3 – Tầng B1</span></div>
+      <div class="pay-sum-row"><span class="pl">Thời gian</span><span class="pv">11:00 – 13:00</span></div>
+      <div class="pay-sum-row grand"><span class="pl">Tổng thanh toán</span><span class="pv" id="ps-total">10.000₫</span></div>
+    </div>
+
+    <span class="pay-methods-lbl">Phương thức thanh toán</span>
+    <div class="pay-items">
+      <div class="pay-item on" onclick="pickPay(this)">
+        <div class="pm-logo pm-mm">MM</div>
+        <div class="pm-info"><div class="pm-name">Ví MoMo</div><div class="pm-sub">Số dư: <span class="pm-bal">125.000₫</span></div></div>
+        <div class="radio on"><div class="radio-dot"></div></div>
+      </div>
+      <div class="pay-item" onclick="pickPay(this)">
+        <div class="pm-logo pm-zl">ZL</div>
+        <div class="pm-info"><div class="pm-name">ZaloPay</div><div class="pm-sub">Số dư: <span class="pm-bal">85.000₫</span></div></div>
+        <div class="radio"></div>
+      </div>
+      <div class="pay-item" onclick="pickPay(this)">
+        <div class="pm-logo pm-vn">VN</div>
+        <div class="pm-info"><div class="pm-name">VNPay</div><div class="pm-sub">Thanh toán QR ngân hàng</div></div>
+        <div class="radio"></div>
+      </div>
+      <div class="pay-item" onclick="pickPay(this)">
+        <div class="pm-logo pm-cd">💳</div>
+        <div class="pm-info"><div class="pm-name">Thẻ ngân hàng</div><div class="pm-sub">Visa / Mastercard / ATM</div></div>
+        <div class="radio"></div>
+      </div>
+      <div class="pay-item" onclick="pickPay(this)">
+        <div class="pm-logo pm-cs">💵</div>
+        <div class="pm-info"><div class="pm-name">Tiền mặt tại quầy</div><div class="pm-sub">Thanh toán khi đến bãi</div></div>
+        <div class="radio"></div>
+      </div>
+    </div>
+
+    <div class="sec-note">🔒 Giao dịch mã hoá SSL 256-bit. Thông tin thẻ không lưu trên server.</div>
+    <div style="height:16px;"></div>
+  </div>
+
+  <div class="sticky-cta">
+    <button class="cta-btn green" onclick="goTo(4)">Xác nhận & Thanh toán 10.000₫</button>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav on"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(6)"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SCREEN 4 · SUCCESS
+══════════════════════════════ -->
+<div class="screen" id="s4">
+  <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">📶 🔋</span></div>
+  <div class="top-bar" style="text-align:center;">
+    <div class="top-bar-row" style="justify-content:center;">
+      <div class="top-bar-title">Đặt chỗ thành công</div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <div class="success-section">
+      <div class="success-ring">✓</div>
+      <div class="success-title">Thanh toán xong!</div>
+      <div class="success-sub">Chỗ A3 được giữ đến 11:30 AM.<br>Xuất trình QR khi vào bãi.</div>
+
+      <div class="qr-card">
+        <div class="qr-code"></div>
+        <div class="qr-id">#PC-2025-8842</div>
+        <div class="qr-label">Quét để vào bãi xe · Hết hạn 13:00</div>
+      </div>
+
+      <div class="booking-card">
+        <div class="bc-row"><span class="bl">Bãi xe</span><span class="bv">Vincom Đồng Khởi</span></div>
+        <div class="bc-row"><span class="bl">Chỗ đỗ</span><span class="bv" style="color:var(--b5);">A3 – Tầng B1</span></div>
+        <div class="bc-row"><span class="bl">Thời gian</span><span class="bv">11:00 – 13:00</span></div>
+        <div class="bc-row"><span class="bl">Thanh toán</span><span class="bv">Ví MoMo</span></div>
+        <div class="bc-row"><span class="bl">Đã thanh toán</span><span class="bv" style="color:var(--g);">10.000₫</span></div>
+      </div>
+
+      <div class="action-row">
+        <button class="act-btn primary" onclick="toast('🧭 Đang mở bản đồ...')">🧭 Chỉ đường</button>
+        <button class="act-btn ghost" onclick="toast('📤 Đã chia sẻ!')">↗ Chia sẻ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav on" onclick="goTo(5)"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(6)"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SCREEN 5 · HISTORY + REVIEW
+══════════════════════════════ -->
+<div class="screen" id="s5" style="position:relative;">
+  <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">📶 🔋</span></div>
+  <div class="top-bar">
+    <div class="top-bar-row">
+      <div class="top-bar-title">Lịch sử đặt chỗ</div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <div style="background:var(--am);padding:12px 20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">⏰</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:white;">Hôm nay – Vincom Đồng Khởi</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.85);">Chỗ A3 · 11:00–13:00 · Đang hoạt động</div>
+      </div>
+      <span style="margin-left:auto;font-size:18px;cursor:pointer;" onclick="goTo(4)">→</span>
+    </div>
+
+    <div style="padding:12px 20px 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);">Chưa đánh giá</div>
+
+    <div class="hist-item">
+      <div class="hi-top">
+        <div class="hi-ico">🏢</div>
+        <div class="hi-name">Vincom Đồng Khởi</div>
+        <div class="hi-price">10.000₫</div>
+      </div>
+      <div class="hi-sub">Hôm nay · 11:00–13:00 · Chỗ A3 · MoMo</div>
+      <div class="hi-stars-row">
+        <div class="stars" id="st0">
+          <span class="star" onclick="rateStar(0,1)">★</span>
+          <span class="star" onclick="rateStar(0,2)">★</span>
+          <span class="star" onclick="rateStar(0,3)">★</span>
+          <span class="star" onclick="rateStar(0,4)">★</span>
+          <span class="star" onclick="rateStar(0,5)">★</span>
+        </div>
+        <button class="write-rev-btn" onclick="openSheet()">Viết đánh giá</button>
+      </div>
+    </div>
+
+    <div style="padding:12px 20px 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);">Đã đánh giá</div>
+
+    <div class="hist-item">
+      <div class="hi-top">
+        <div class="hi-ico">🌿</div>
+        <div class="hi-name">Green Park – Landmark 81</div>
+        <div class="hi-price">24.000₫</div>
+      </div>
+      <div class="hi-sub">Hôm qua · 14:00–17:00 · Chỗ B12</div>
+      <div class="hi-stars-row">
+        <div class="stars">
+          <span class="star on">★</span><span class="star on">★</span>
+          <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span>
+        </div>
+        <span style="font-size:12px;color:var(--gy400);margin-left:auto;">Đã đánh giá</span>
+      </div>
+    </div>
+
+    <div class="hist-item">
+      <div class="hi-top">
+        <div class="hi-ico">🏬</div>
+        <div class="hi-name">Parkson Hùng Vương</div>
+        <div class="hi-price">8.000₫</div>
+      </div>
+      <div class="hi-sub">02/05 · 09:00–11:00 · Chỗ C5</div>
+      <div class="hi-stars-row">
+        <div class="stars">
+          <span class="star on">★</span><span class="star on">★</span>
+          <span class="star on">★</span><span class="star on">★</span><span class="star">★</span>
+        </div>
+        <span style="font-size:12px;color:var(--gy400);margin-left:auto;">Đã đánh giá</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEW SHEET -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+    <div class="review-sheet" id="reviewSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Đánh giá bãi xe</div>
+      <div class="sheet-sub">Vincom Đồng Khởi · Chỗ A3 hôm nay</div>
+      <div class="big-stars" id="bigStars">
+        <span class="big-star" onclick="rateBig(1)">★</span>
+        <span class="big-star" onclick="rateBig(2)">★</span>
+        <span class="big-star" onclick="rateBig(3)">★</span>
+        <span class="big-star" onclick="rateBig(4)">★</span>
+        <span class="big-star" onclick="rateBig(5)">★</span>
+      </div>
+      <div class="review-tags">
+        <div class="rtag" onclick="this.classList.toggle('sel')">Sạch sẽ</div>
+        <div class="rtag" onclick="this.classList.toggle('sel')">An toàn</div>
+        <div class="rtag" onclick="this.classList.toggle('sel')">Nhanh chóng</div>
+        <div class="rtag" onclick="this.classList.toggle('sel')">Nhân viên tốt</div>
+        <div class="rtag" onclick="this.classList.toggle('sel')">Giá hợp lý</div>
+        <div class="rtag" onclick="this.classList.toggle('sel')">Dễ tìm</div>
+      </div>
+      <textarea class="rev-textarea" placeholder="Chia sẻ trải nghiệm của bạn (tuỳ chọn)..."></textarea>
+      <button class="sheet-submit" onclick="submitReview()">Gửi đánh giá</button>
+      <button class="sheet-skip" onclick="closeSheet()">Bỏ qua</button>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav on"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(6)"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SCREEN 6 · OPERATOR DASHBOARD
+══════════════════════════════ -->
+<div class="screen" id="s6">
+  <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">📶 🔋</span></div>
+  <div class="top-bar">
+    <div class="top-bar-row">
+      <div>
+        <div class="top-bar-title">Operator <span style="color:var(--b5);">Dashboard</span></div>
+        <div class="top-bar-sub">Vincom Đồng Khởi · Nguyễn Văn Minh</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="display:flex;align-items:center;gap:5px;background:var(--gl);border-radius:100px;padding:5px 10px;font-size:11px;font-weight:700;color:#065F46;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:pulse 1.5s infinite;display:block;"></span>Live
+        </div>
+        <button class="icon-btn" onclick="toast('📊 Đang xuất báo cáo...')">⬇</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-lbl">Lấp đầy hôm nay</div>
+        <div class="kpi-val" style="color:var(--am);" id="kpiOcc">70%</div>
+        <div class="kpi-change kpi-up">↑ +5.2% hôm qua</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-lbl">Doanh thu</div>
+        <div class="kpi-val" style="color:var(--g);" id="kpiRev">2.4M₫</div>
+        <div class="kpi-change kpi-up">↑ +12% TB tuần</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-lbl">Lượt vào ra</div>
+        <div class="kpi-val" style="color:var(--b5);" id="kpiTrips">842</div>
+        <div class="kpi-change kpi-dn">↓ -3% hôm qua</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-lbl">Chỗ trống</div>
+        <div class="kpi-val" style="color:var(--g);" id="kpiSlots">66</div>
+        <div class="kpi-change" style="color:var(--gy400);">/ 220 tổng</div>
+      </div>
+    </div>
+
+    <!-- SLOT MANAGEMENT -->
+    <div style="padding:0 20px 10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);display:flex;justify-content:space-between;align-items:center;">
+      <span>Quản lý chỗ đỗ</span>
+      <span style="font-size:11px;font-weight:500;color:var(--gy400);letter-spacing:0;text-transform:none;">Chạm +/− để cập nhật</span>
+    </div>
+    <div class="slot-cards">
+      <div class="slot-card">
+        <div class="slot-type-row"><span class="slot-dot" style="background:var(--am);"></span><span class="slot-type-name">Xe máy</span></div>
+        <div class="slot-counter">
+          <button class="cnt-btn cnt-minus" onclick="adjSlot('motor',-1)">−</button>
+          <span class="cnt-num" id="motorSlot">44</span>
+          <button class="cnt-btn cnt-plus" onclick="adjSlot('motor',1)">+</button>
+        </div>
+        <div class="slot-cap-txt">Tổng: 120 · Đang dùng: <strong id="motorUsed">76</strong></div>
+        <div class="occ-track"><div class="occ-fill2" id="motorBar" style="width:63%;background:var(--am);"></div></div>
+      </div>
+      <div class="slot-card">
+        <div class="slot-type-row"><span class="slot-dot" style="background:var(--b5);"></span><span class="slot-type-name">Ô tô</span></div>
+        <div class="slot-counter">
+          <button class="cnt-btn cnt-minus" onclick="adjSlot('car',-1)">−</button>
+          <span class="cnt-num" id="carSlot">18</span>
+          <button class="cnt-btn cnt-plus" onclick="adjSlot('car',1)">+</button>
+        </div>
+        <div class="slot-cap-txt">Tổng: 80 · Đang dùng: <strong id="carUsed">62</strong></div>
+        <div class="occ-track"><div class="occ-fill2" id="carBar" style="width:78%;background:var(--b5);"></div></div>
+      </div>
+      <div class="slot-card">
+        <div class="slot-type-row"><span class="slot-dot" style="background:var(--g);"></span><span class="slot-type-name">VIP / SUV</span></div>
+        <div class="slot-counter">
+          <button class="cnt-btn cnt-minus" onclick="adjSlot('vip',-1)">−</button>
+          <span class="cnt-num" id="vipSlot">4</span>
+          <button class="cnt-btn cnt-plus" onclick="adjSlot('vip',1)">+</button>
+        </div>
+        <div class="slot-cap-txt">Tổng: 20 · Đang dùng: <strong id="vipUsed">16</strong></div>
+        <div class="occ-track"><div class="occ-fill2" id="vipBar" style="width:80%;background:var(--g);"></div></div>
+      </div>
+    </div>
+
+    <!-- REVENUE CHART -->
+    <div class="chart-panel" style="margin-top:10px;">
+      <div class="chart-lbl">Doanh thu theo giờ hôm nay (K₫)</div>
+      <div class="bar-chart" id="revenueChart"></div>
+    </div>
+
+    <!-- DONUT -->
+    <div class="chart-panel" style="margin-top:10px;">
+      <div class="chart-lbl">Phân bổ loại xe</div>
+      <div class="donut-row">
+        <svg width="88" height="88" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="13" fill="none" stroke="var(--gy100)" stroke-width="5"/>
+          <circle cx="18" cy="18" r="13" fill="none" stroke="var(--am)" stroke-width="5" stroke-dasharray="55 100" stroke-dashoffset="-25" transform="rotate(-90 18 18)"/>
+          <circle cx="18" cy="18" r="13" fill="none" stroke="#4D82FF" stroke-width="5" stroke-dasharray="28 100" stroke-dashoffset="-80" transform="rotate(-90 18 18)"/>
+          <circle cx="18" cy="18" r="13" fill="none" stroke="var(--g)" stroke-width="5" stroke-dasharray="10 100" stroke-dashoffset="-108" transform="rotate(-90 18 18)"/>
+          <text x="18" y="19" text-anchor="middle" dominant-baseline="central" fill="var(--gy800)" font-size="5.5" font-weight="700" font-family="Plus Jakarta Sans,sans-serif">70%</text>
+        </svg>
+        <div class="donut-leg">
+          <div class="dl-item"><span class="dl-dot" style="background:var(--am);"></span>Xe máy<span class="dl-val">55%</span></div>
+          <div class="dl-item"><span class="dl-dot" style="background:#4D82FF;"></span>Ô tô<span class="dl-val">28%</span></div>
+          <div class="dl-item"><span class="dl-dot" style="background:var(--g);"></span>VIP/SUV<span class="dl-val">10%</span></div>
+          <div class="dl-item"><span class="dl-dot" style="background:var(--gy300);"></span>Khác<span class="dl-val">7%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEAK HOURS -->
+    <div class="rep-panel">
+      <div class="rep-head">
+        <div class="rep-title">Giờ cao điểm</div>
+        <span style="font-size:12px;color:var(--b5);font-weight:600;">Hôm nay</span>
+      </div>
+      <div class="peak-row"><span class="peak-time">07:00 – 08:00</span><div class="peak-bg"><div class="peak-bar" style="width:75%;background:var(--am);"></div></div><span class="peak-pct">75%</span></div>
+      <div class="peak-row"><span class="peak-time">12:00 – 13:00</span><div class="peak-bg"><div class="peak-bar" style="width:92%;background:var(--r);"></div></div><span class="peak-pct">92%</span></div>
+      <div class="peak-row"><span class="peak-time">17:00 – 19:00</span><div class="peak-bg"><div class="peak-bar" style="width:88%;background:var(--am);"></div></div><span class="peak-pct">88%</span></div>
+      <div class="peak-row"><span class="peak-time">21:00 – 22:00</span><div class="peak-bg"><div class="peak-bar" style="width:34%;background:var(--b4);"></div></div><span class="peak-pct">34%</span></div>
+    </div>
+
+    <!-- ASSET PERFORMANCE -->
+    <div class="rep-panel" style="margin-top:10px;">
+      <div class="rep-head">
+        <div class="rep-title">Hiệu suất tài sản</div>
+        <span class="tag tag-g" style="font-size:11px;">+15% target</span>
+      </div>
+      <div class="metric-row"><span class="ml">Lượng khách TB/ngày</span><span class="mv" style="color:var(--b5);">712</span></div>
+      <div class="metric-row"><span class="ml">Doanh thu TB/ngày</span><span class="mv" style="color:var(--g);">2.2M₫</span></div>
+      <div class="metric-row"><span class="ml">Asset utilization</span><span class="mv" style="color:var(--am);">68.4%</span></div>
+      <div class="metric-row"><span class="ml">Doanh thu/chỗ/ngày</span><span class="mv">10.000₫</span></div>
+      <div class="metric-row"><span class="ml">Tiềm năng tối ưu</span><span class="mv" style="color:var(--g);">+26%</span></div>
+    </div>
+
+    <!-- INSIGHT -->
+    <div class="insight-card">
+      <span style="font-size:20px;flex-shrink:0;">📈</span>
+      <p style="font-size:13px;color:var(--b7);line-height:1.6;"><strong>Urban Mobility research:</strong> Tối ưu occupancy có thể tăng doanh thu <strong>15–30%</strong>. Hiện tại 68.4% — tiềm năng +26% nếu đạt 90% giờ cao điểm.</p>
+    </div>
+
+    <!-- MARKETING -->
+    <div style="padding:16px 20px 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);">Marketing & Hồ sơ</div>
+    <div class="upload-zone" onclick="toast('📸 Chức năng tải ảnh sắp ra mắt!')">
+      <div style="font-size:28px;">📸</div>
+      <p>Kéo thả ảnh hoặc <strong style="color:var(--b5);">chọn từ điện thoại</strong></p>
+      <p style="font-size:11px;margin-top:3px;">JPG · PNG tối đa 10MB</p>
+    </div>
+
+    <div style="padding:0 20px 6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gy400);">Gói quảng bá</div>
+    <div class="promo-scroll">
+      <div class="promo-card">
+        <div class="promo-name">Basic</div>
+        <div class="promo-price">Miễn phí <span>/tháng</span></div>
+        <ul class="promo-feats">
+          <li>✓ Hiển thị nền tảng</li>
+          <li>✓ Hồ sơ cơ bản</li>
+          <li style="color:var(--gy300);">✗ Ưu tiên tìm kiếm</li>
+        </ul>
+        <button class="promo-btn ghost">Đang dùng</button>
+      </div>
+      <div class="promo-card rec">
+        <div class="promo-badge">★ Phổ biến nhất</div>
+        <div class="promo-name">Pro</div>
+        <div class="promo-price">299.000₫ <span>/tháng</span></div>
+        <ul class="promo-feats">
+          <li>✓ Top tìm kiếm</li>
+          <li>✓ Banner quảng cáo</li>
+          <li>✓ Phân tích nâng cao</li>
+        </ul>
+        <button class="promo-btn primary" onclick="toast('💳 Chuyển đến thanh toán...')">Nâng cấp</button>
+      </div>
+      <div class="promo-card">
+        <div class="promo-name">Enterprise</div>
+        <div class="promo-price">Liên hệ</div>
+        <ul class="promo-feats">
+          <li>✓ Quảng bá toàn hệ thống</li>
+          <li>✓ API tích hợp riêng</li>
+          <li>✓ Account manager</li>
+        </ul>
+        <button class="promo-btn outline" onclick="toast('📞 Sales sẽ liên hệ 24h!')">Liên hệ</button>
+      </div>
+    </div>
+    <div style="height:24px;"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav" onclick="goTo(0)"><div class="bnav-icon">🗺</div><div class="bnav-lbl">Tìm kiếm</div><div class="bnav-indicator"></div></button>
+    <button class="bnav" onclick="goTo(5)"><div class="bnav-icon">📋</div><div class="bnav-lbl">Đặt chỗ</div><div class="bnav-indicator"></div></button>
+    <button class="bnav on"><div class="bnav-icon">📊</div><div class="bnav-lbl">Vận hành</div><div class="bnav-indicator"></div></button>
+    <button class="bnav"><div class="bnav-icon">👤</div><div class="bnav-lbl">Tài khoản</div><div class="bnav-indicator"></div></button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<script>
+let cur = 0;
+const screens = ['s0','s1','s2','s3','s4','s5','s6'];
+function goTo(n){
+  document.getElementById(screens[cur]).classList.remove('on');
+  document.getElementById(screens[n]).classList.add('on');
+  cur = n;
+  window.scrollTo(0,0);
+  if(n===6) buildChart();
+}
+
+function pickVehicle(el,name){
+  document.querySelectorAll('.v-item').forEach(i=>i.classList.remove('sel'));
+  el.classList.add('sel');
+  toast('✓ Đã chọn: '+name);
+}
+function toggleChip(el){el.classList.toggle('sel');}
+function switchListMap(m){
+  document.getElementById('listView').style.display = m==='list'?'flex':'none';
+  document.getElementById('mapView').style.display = m==='map'?'block':'none';
+  document.getElementById('listView').style.flexDirection='column';
+  document.getElementById('btnList').classList.toggle('on',m==='list');
+  document.getElementById('btnMap').classList.toggle('on',m==='map');
+}
+
+// slot picker
+let selSlot='A3';
+function pickSlot(el){
+  document.querySelectorAll('.slot.sel').forEach(s=>{s.classList.remove('sel');s.classList.add('free');});
+  el.classList.remove('free');el.classList.add('sel');
+  selSlot=el.textContent;
+  document.getElementById('detailCta').textContent='Đặt chỗ ngay – Chỗ '+selSlot;
+  document.getElementById('bkSlot').textContent=selSlot;
+  document.getElementById('ps-slot').textContent=selSlot+' – Tầng B1';
+}
+
+// time
+function pickTime(el){
+  if(el.classList.contains('off'))return;
+  document.querySelectorAll('.t-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// duration
+let bkBasePrice=10000;
+function pickDur(el,dur,price){
+  document.querySelectorAll('.d-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  bkBasePrice=price;
+  document.getElementById('bkPrice').textContent=price.toLocaleString('vi')+'₫';
+  document.getElementById('bkTotal').textContent=price.toLocaleString('vi')+'₫';
+  document.getElementById('ps-total').textContent=price.toLocaleString('vi')+'₫';
+}
+
+// payment
+function pickPay(el){
+  document.querySelectorAll('.pay-item').forEach(i=>{
+    i.classList.remove('on');
+    const r=i.querySelector('.radio');
+    r.classList.remove('on');
+    const d=r.querySelector('.radio-dot');
+    if(d)d.remove();
+  });
+  el.classList.add('on');
+  const r=el.querySelector('.radio');
+  r.classList.add('on');
+  const d=document.createElement('div');d.className='radio-dot';
+  r.appendChild(d);
+}
+
+// slot data
+const slotData={motor:{free:44,total:120},car:{free:18,total:80},vip:{free:4,total:20}};
+function adjSlot(t,d){
+  const s=slotData[t];
+  s.free=Math.max(0,Math.min(s.total,s.free+d));
+  const used=s.total-s.free;
+  const pct=Math.round((used/s.total)*100);
+  document.getElementById(t+'Slot').textContent=s.free;
+  document.getElementById(t+'Used').textContent=used;
+  document.getElementById(t+'Bar').style.width=pct+'%';
+  const tFree=slotData.motor.free+slotData.car.free+slotData.vip.free;
+  const tOcc=Math.round(((220-tFree)/220)*100);
+  document.getElementById('kpiOcc').textContent=tOcc+'%';
+  document.getElementById('kpiSlots').textContent=tFree;
+  toast(d>0?'✓ Thêm 1 chỗ trống':'✓ Ghi nhận 1 xe vào bãi');
+}
+
+// chart
+const hrs=['6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h'];
+const revs=[80,180,210,150,120,200,280,240,130,110,160,290,270,140,90];
+function buildChart(){
+  const c=document.getElementById('revenueChart');
+  if(!c||c.children.length)return;
+  const mx=Math.max(...revs);
+  hrs.forEach((h,i)=>{
+    const col=document.createElement('div');col.className='bar-col';
+    const bar=document.createElement('div');
+    bar.className='bar'+(revs[i]>250?' peak':'');
+    bar.style.height=(revs[i]/mx*100)+'%';
+    bar.title=h+': '+revs[i]+'K₫';
+    bar.onclick=()=>toast(h+' → '+revs[i]+'K₫');
+    const lbl=document.createElement('div');lbl.className='bar-l';lbl.textContent=h;
+    col.appendChild(bar);col.appendChild(lbl);
+    c.appendChild(col);
+  });
+}
+
+// stars
+function rateStar(idx,val){
+  document.querySelectorAll('#st'+idx+' .star').forEach((s,i)=>s.classList.toggle('on',i<val));
+  toast('Đã chọn '+val+' sao ⭐');
+}
+
+// review sheet
+function openSheet(){document.getElementById('sheetOverlay').classList.add('open');}
+function closeSheet(e){
+  if(!e||e.target===document.getElementById('sheetOverlay'))
+    document.getElementById('sheetOverlay').classList.remove('open');
+}
+function rateBig(val){
+  document.querySelectorAll('.big-star').forEach((s,i)=>s.classList.toggle('on',i<val));
+}
+function submitReview(){
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.querySelectorAll('#st0 .star').forEach(s=>s.classList.add('on'));
+  const btn=document.querySelector('.write-rev-btn');
+  if(btn){btn.textContent='Đã đánh giá';btn.style.color='var(--g)';}
+  toast('✓ Cảm ơn đánh giá của bạn!');
+}
+
+// toast
+let tTimer;
+function toast(msg){
+  const t=document.getElementById('toastEl');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
